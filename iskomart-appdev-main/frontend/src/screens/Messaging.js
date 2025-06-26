@@ -135,8 +135,13 @@ const Messaging = ({ navigation, route }) => {
         <Image source={require('../assets/logo.png')} style={{ width: 50, height: 50 }} />
       </View>
 
-      <View style={styles.searchBarContainer}>
-        <TextInput style={styles.searchBar} placeholder="Search Messages" />
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search Messages"
+          placeholderTextColor="#999"
+        />
+        <Icon name="search" size={20} color="#999" style={styles.searchIcon} />
       </View>
       
       {loading && <Text>Loading messages...</Text>}
@@ -157,8 +162,8 @@ const Messaging = ({ navigation, route }) => {
         <TouchableOpacity onPress={() => navigation.navigate('Home', { user_id })}>
           <Icon name="home-outline" size={25} color="#000" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('Search', { user_id })}>
-          <Icon name="search-outline" size={25} color="#000" />
+        <TouchableOpacity onPress={() => navigation.navigate('AddToCart', { user_id })}>
+          <Icon name="cart-outline" size={25} color="#000" />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate('AddPost', { user_id })}>
           <Icon name="add-circle-outline" size={25} color="#000" />
@@ -186,23 +191,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9C2D0',
     padding: 10,
   },
-  searchBarContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 10,
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    position: 'relative',
   },
-  searchBar: {
+  searchInput: {
     backgroundColor: '#fff',
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    height: 40,
-    width: '90%',
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    fontSize: 16,
     borderWidth: 2,
     borderColor: '#000',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.5,
+    paddingRight: 50,
+  },
+    searchIcon: {
+    position: 'absolute',
+    right: 35,
+    top: 27,
   },
   messagesList: {
     flex: 1,
@@ -256,21 +263,21 @@ const styles = StyleSheet.create({
     color: 'gray',
     textAlign: 'center',
   },
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 15,
-    backgroundColor: '#FFDC9A',
-    borderRadius: 30,
-    marginHorizontal: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.5,
-    borderWidth: 2,
-    borderColor: '#000',
-  },
+    bottomNav: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      padding: 20,
+      backgroundColor: '#FFDC9A',
+      borderRadius: 110,
+      marginHorizontal: 30,
+      marginBottom: 30,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 5 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.5,
+      borderWidth: 2,
+      borderColor: '#000',
+    },
 });
 
 export default Messaging;

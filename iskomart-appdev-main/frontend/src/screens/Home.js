@@ -80,6 +80,27 @@ const Home = ({ route, navigation }) => {
       Alert.alert('Error', 'Something went wrong while updating like status');
     }
   };
+   const handleAddToCart = async (item_id) => {
+    if (!user_id) {
+      Alert.alert('Error', 'Invalid user ID');
+      return;
+    }
+    try {
+      const response = await axios.post(`${URL}/api/cart/add`, {
+        user_id,
+        item_id,
+      });
+      if (response.status === 200) {
+        Alert.alert('Success', 'Item added to cart!');
+      } else {
+        Alert.alert('Error', 'Failed to add item to cart');
+      }
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+      Alert.alert('Error', 'Something went wrong while adding to cart');
+    }
+  };
+
 
   const imageMap = {
     1: require('../assets/items/1.jpg'),
@@ -150,6 +171,13 @@ const Home = ({ route, navigation }) => {
           >
             <Icon name="chatbubble-outline" size={24} color="#000" marginBottom="3" marginLeft="10"/>
           </TouchableOpacity>
+          <TouchableOpacity
+      style={styles.iconButton}
+      onPress={() => handleAddToCart(item.item_id)}
+      >
+        <Icon name="cart-outline" size={24} color="#000" />
+        <Text style={styles.iconText}>Add to Cart</Text>
+        </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -161,8 +189,13 @@ const Home = ({ route, navigation }) => {
         <Image source={require('../assets/logo.png')} style={{ width: 50, height: 50 }} />
       </View>
 
-      <View style={styles.searchBarContainer}>
-        <TextInput style={styles.searchBar} placeholder="Search" />
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search"
+          placeholderTextColor="#999"
+        />
+        <Icon name="search" size={20} color="#999" style={styles.searchIcon} />
       </View>
 
       <Image source={require('../assets/7.png')} />
@@ -193,8 +226,8 @@ const Home = ({ route, navigation }) => {
         <TouchableOpacity onPress={() => navigation.navigate('Home', { user_id })}>
           <Icon name="home-outline" size={25} color="#000" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('Search', { user_id })}>
-          <Icon name="search-outline" size={25} color="#000" />
+        <TouchableOpacity onPress={() => navigation.navigate('AddToCart', { user_id })}>
+          <Icon name="cart-outline" size={25} color="#000" />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate('AddPost', { user_id })}>
           <Icon name="add-circle-outline" size={25} color="#000" />
@@ -215,29 +248,33 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f9f5e8',
   },
-  header: {
+   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#F9C2D0',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
-  searchBarContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    position: 'relative',
   },
-  searchBar: {
+  searchInput: {
     backgroundColor: '#fff',
-    borderRadius: 120,
-    paddingHorizontal: 10,
-    height: 40,
-    width: '90%',
-    marginTop: 10,
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    fontSize: 16,
     borderWidth: 2,
     borderColor: '#000',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.5,
+    paddingRight: 50,
+  },
+    searchIcon: {
+    position: 'absolute',
+    right: 35,
+    top: 27,
   },
   categoryImage: {
     width: 30,

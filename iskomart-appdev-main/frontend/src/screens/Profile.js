@@ -84,6 +84,12 @@ const Profile = ({ route, navigation }) => {
                         <Icon name="chatbubble-outline" size={25} color="#000" marginBottom="3"/>
                     </TouchableOpacity>
                 </View>
+                <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={() => handleAddToCart(item.item_id)}
+                >
+                    <Icon name="cart-outline" size={24} color="#000" />
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -131,8 +137,8 @@ const Profile = ({ route, navigation }) => {
                 <TouchableOpacity onPress={() => navigation.navigate('Home', { user_id })}>
                     <Icon name="home-outline" size={25} color="#000" />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('Search', { user_id })}>
-                    <Icon name="search-outline" size={25} color="#000" />
+                <TouchableOpacity onPress={() => navigation.navigate('AddToCart', { user_id })}>
+                    <Icon name="cart-outline" size={25} color="#000" />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => navigation.navigate('AddPost', { user_id })}>
                     <Icon name="add-circle-outline" size={25} color="#000" />
@@ -275,9 +281,9 @@ const styles = StyleSheet.create({
     bottomNav: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        padding: 15,
+        padding: 20,
         backgroundColor: '#FFDC9A',
-        borderRadius: 30,
+        borderRadius: 110,
         marginHorizontal: 30,
         marginBottom: 30,
         shadowColor: '#000',

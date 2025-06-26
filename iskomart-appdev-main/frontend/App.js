@@ -11,6 +11,7 @@ import Profile from './src/screens/Profile'; //Import ProfilePage
 import Messaging from './src/screens/Messaging'; //Import MessagingPage
 import ChatPage from './src/screens/ChatPage'; // Import ChatPage
 import EditProfile from './src/screens/EditProfile';
+import AddToCart from './src/screens/AddToCart';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,7 +23,7 @@ export default function App() {
         <Stack.Screen name="LogIn" component={LogIn} options={{ headerShown: false }} />
         <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
         <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} /> 
-        <Stack.Screen name="Search" component={Search} options={{ headerShown: false }} /> 
+        <Stack.Screen name="AddToCart" component={AddToCart} options={{ headerShown: false }} /> 
         <Stack.Screen name ="AddPost" component={AddPost}options={{headerShown: false}}/>
         <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }}/> 
         <Stack.Screen name="Messaging" component={Messaging} options={{ headerShown: false }}/> 

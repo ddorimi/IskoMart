@@ -158,8 +158,8 @@ const AddPost = ({ navigation, route }) => {
         <TouchableOpacity onPress={() => navigation.navigate('Home', { user_id })}>
           <Icon name="home-outline" size={25} color="#000" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('Search', { user_id })}>
-          <Icon name="search-outline" size={25} color="#000" />
+        <TouchableOpacity onPress={() => navigation.navigate('AddToCart', { user_id })}>
+          <Icon name="cart-outline" size={25} color="#000" />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate('AddPost', { user_id })}>
           <Icon name="add-circle-outline" size={25} color="#000" />
