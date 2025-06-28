@@ -1,1 +1,2 @@
-export const URL = "http://192.168.100.107:3001";
+//config.js
+export const URL = "http://192.168.0.100:3001";

@@ -4,25 +4,25 @@
     "slug": "iskomart",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./frontend/src/assets/logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./frontend/src/assets/logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FBF7EA"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./frontend/src/assets/logo.png",
+        "backgroundColor": "#FBF7EA"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./frontend/src/assets/logo.png"
     }
   }
 }

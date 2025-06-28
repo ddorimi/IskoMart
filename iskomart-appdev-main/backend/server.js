@@ -9,6 +9,8 @@ const messageRoutes = require('./routes/messageRoutes'); // Import message route
 
 // Import item-related functions
 const itemRoutes = require('./routes/itemRoutes'); // Import item routes
+const cartRoutes = require('./routes/cartRoutes'); // Import cart routes
+const orderRoutes = require('./routes/orderRoutes'); // Import order routes
 
 const app = express();
 app.use(express.json());
@@ -21,6 +23,8 @@ app.post('/register', (req, res) => registerUser(req, res));
 app.get('/users/:user_id', (req, res) => getUsers(req, res)); // Changed this to use user_id as a param
 
 app.use('/api', itemRoutes); // Add item-related routes with the '/api' prefix
+app.use('/api/cart', cartRoutes); // Add cart-related routes
+app.use('/api/orders', orderRoutes); // Add order-related routes
 
 app.use('/text', messageRoutes); // Use message-related routes
 

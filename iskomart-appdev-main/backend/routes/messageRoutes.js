@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { sendMessage, getMessages, getUserById } = require('../controllers/messageController'); // Corrected import
+const { sendMessage, getMessages, getUserByIdController, confirmOrder, updateOrderStatus } = require('../controllers/messageController');
 
 // Route to send a new message
 router.post('/messages', sendMessage);
@@ -9,6 +9,12 @@ router.post('/messages', sendMessage);
 router.get('/messages/:user_id', getMessages);
 
 // Route to get user info by user_id (for the receiver)
-router.get('/messages/user/:user_id', getUserById);
+router.get('/messages/user/:user_id', getUserByIdController);
+
+// Route to confirm order
+router.post('/orders/confirm', confirmOrder);
+
+// Route to update order status
+router.put('/orders/status/:user_id', updateOrderStatus);
 
 module.exports = router;

@@ -1,27 +1,25 @@
 // controllers/userController.js
 const bcrypt = require('bcryptjs');
-const db = require('../config/db'); // Import the db connection
+const { createUser, findUserByUsername, findUserById } = require('../models/UserModel');
 
 // Register user function
 const registerUser = async (req, res) => {
-  const { first_name, last_name, username, email, password } = req.body;
+  const { username, first_name, last_name, email, password, phone, address } = req.body;
 
   try {
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Check if username or email already exists
-    const [rows] = await db.query('SELECT * FROM users WHERE username = ? OR email = ?', [username, email]);
-
-    if (rows.length > 0) {
-      return res.status(400).json({ message: 'Username or email already exists' });
+    // Validate required fields
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'Username, email, and password are required' });
     }
 
-    // Insert the user into the database
-    await db.query(
-      'INSERT INTO users (first_name, last_name, username, email, password) VALUES (?, ?, ?, ?, ?)',
-      [first_name, last_name, username, email, hashedPassword]
-    );
+    // Check if username already exists
+    const existingUser = await findUserByUsername(username);
+    if (existingUser) {
+      return res.status(400).json({ message: 'Username already exists' });
+    }
+
+    // Create the user using the UserModel
+    await createUser(username, email, password, first_name, last_name, phone, address);
 
     // Return success message
     res.status(201).json({ message: 'User registered successfully' });
@@ -36,26 +34,29 @@ const loginUser = async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Query the database to find the user
-    const [result] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+    // Find user by username
+    const user = await findUserByUsername(username);
 
-    if (result.length === 0) {
+    if (!user) {
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
     // Compare the provided password with the stored hashed password
-    const isMatch = await bcrypt.compare(password, result[0].password);
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
-    // Return success message with user_id
+    // Return success message with user data
     res.status(200).json({
       message: 'Login successful',
       userData: {
-        user_id: result[0].user_id, // Include user_id in the response
-        username: result[0].username,
+        user_id: user.user_id,
+        username: user.username,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email
       },
     });
   } catch (err) {
@@ -69,17 +70,25 @@ const getUsers = async (req, res) => {
   const { user_id } = req.params; // Expect user_id as a parameter in the URL
 
   try {
-    // Query the database to get the user's info by user_id
-    const [result] = await db.query('SELECT first_name, last_name, username, email FROM users WHERE user_id = ?', [user_id]);
+    // Get user by ID using UserModel
+    const user = await findUserById(user_id);
 
-    if (result.length === 0) {
+    if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
     // Return user info
     res.status(200).json({
       message: 'User info retrieved successfully',
-      userInfo: result[0],
+      userInfo: {
+        user_id: user.user_id,
+        username: user.username,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address
+      },
     });
   } catch (err) {
     console.error('Error retrieving user info:', err);

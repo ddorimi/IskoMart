@@ -27,7 +27,12 @@ const Messaging = ({ navigation, route }) => {
           setNoMessages(false); // Messages exist, hide the noMessages state
         }
       } catch (error) {
-        setNoMessages(true); // Consider empty if there's an error
+        console.error('Error fetching messages:', error);
+        if (error.response?.status === 404) {
+          setNoMessages(true); // No messages found
+        } else {
+          setError('Failed to load messages');
+        }
       } finally {
         setLoading(false);
       }
@@ -36,17 +41,12 @@ const Messaging = ({ navigation, route }) => {
     fetchMessages();
   }, [user_id]);
 
-  // Filter messages by user_id
-  const filteredMessages = messages.filter(
-    message => message.sender_id === user_id || message.receiver_id === user_id
-  );
-
-  // Group messages by receiver_id and get the latest message for each receiver
+  // Group messages by conversation partner and get the latest message for each
   const latestMessages = Object.values(
-    filteredMessages.reduce((acc, message) => {
+    messages.reduce((acc, message) => {
       const partnerId = message.sender_id === user_id ? message.receiver_id : message.sender_id;
 
-      if (!acc[partnerId] || new Date(acc[partnerId].time) < new Date(message.time)) {
+      if (!acc[partnerId] || new Date(acc[partnerId].created_at) < new Date(message.created_at)) {
         acc[partnerId] = message;
       }
 
@@ -105,9 +105,9 @@ const Messaging = ({ navigation, route }) => {
         {/* Avatar removed */}
         <View style={styles.messageInfo}>
           <Text style={styles.userName}>{chatPartner.username}</Text>
-          <Text style={styles.lastMessage}>{item.text}</Text>
+          <Text style={styles.lastMessage}>{item.message_text}</Text>
         </View>
-        <Text style={styles.time}>{item.time}</Text>
+        <Text style={styles.time}>{new Date(item.created_at).toLocaleTimeString()}</Text>
       </TouchableOpacity>
     );
   };

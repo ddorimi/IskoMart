@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, FlatList, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import { URL } from '../config';
@@ -7,22 +7,44 @@ import { URL } from '../config';
 const AddToCart = ({ route, navigation }) => {
   const { user_id } = route.params || {};
   const [selectAll, setSelectAll] = useState(false);
-  const [items, setItems] = useState([
-    { 
-      id: 1, 
-      name: 'Graham Bars', 
-      price: 50.00, 
-      quantity: 1, 
-      checked: false,
-    },
-    { 
-      id: 2, 
-      name: 'Siomai Rice', 
-      price: 50.00, 
-      quantity: 0, 
-      checked: false,
-    },
-  ]);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch cart items from database
+  useEffect(() => {
+    fetchCartItems();
+  }, [user_id]);
+
+  const fetchCartItems = async () => {
+    if (!user_id) {
+      Alert.alert('Error', 'User ID not found');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.get(`${URL}/api/cart/${user_id}`);
+      if (response.data.success) {
+        const cartItems = response.data.cartItems.map(item => ({
+          id: item.item_id,
+          cart_id: item.cart_id,
+          name: item.item_name,
+          price: parseFloat(item.item_price),
+          quantity: item.quantity,
+          checked: false,
+          image: item.item_photo ? { uri: item.item_photo } : require('../assets/items/1.jpg'),
+          seller_id: item.seller_id,
+          seller_name: item.seller_username
+        }));
+        setItems(cartItems);
+      }
+    } catch (error) {
+      console.error('Error fetching cart items:', error);
+      Alert.alert('Error', 'Failed to load cart items');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleCheck = (id) => {
     setItems(items.map(item => 
@@ -36,15 +58,151 @@ const AddToCart = ({ route, navigation }) => {
     setItems(items.map(item => ({ ...item, checked: newSelectAll })));
   };
 
-  const updateQuantity = (id, change) => {
-    setItems(items.map(item => 
-      item.id === id ? { ...item, quantity: Math.max(0, item.quantity + change) } : item
-    ));
+  const updateQuantity = async (id, change) => {
+    const item = items.find(item => item.id === id);
+    const newQuantity = Math.max(0, item.quantity + change);
+    
+    try {
+      if (newQuantity === 0) {
+        // Remove item from cart
+        await axios.delete(`${URL}/api/cart/remove`, {
+          data: { user_id, item_id: id }
+        });
+        setItems(items.filter(item => item.id !== id));
+      } else {
+        // Update quantity
+        await axios.put(`${URL}/api/cart/update`, {
+          user_id,
+          item_id: id,
+          quantity: newQuantity
+        });
+        setItems(items.map(item => 
+          item.id === id ? { ...item, quantity: newQuantity } : item
+        ));
+      }
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      Alert.alert('Error', 'Failed to update quantity');
+    }
+  };
+
+  const placeOrder = () => {
+    const selectedItems = items.filter(item => item.checked && item.quantity > 0);
+    
+    if (selectedItems.length === 0) {
+      Alert.alert('Error', 'Please select items to chat about');
+      return;
+    }
+
+    // Get unique sellers from selected items
+    const sellers = [...new Set(selectedItems.map(item => ({ 
+      seller_id: item.seller_id, 
+      seller_name: item.seller_name 
+    })))];
+
+    if (sellers.length === 1) {
+      // If only one seller, navigate directly to chat
+      const seller = sellers[0];
+      Alert.alert(
+        'Contact Seller', 
+        `You will be redirected to chat with ${seller.seller_name} to discuss your order.`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          },
+          {
+            text: 'Chat Now',
+            onPress: () => {
+              navigation.navigate('ChatPage', {
+                user_id: user_id,
+                receiver_id: seller.seller_id,
+                userName: seller.seller_name,
+                orderContext: true,
+                selectedItems: selectedItems.map(item => ({
+                  id: item.id,
+                  name: item.name,
+                  price: item.price,
+                  quantity: item.quantity
+                }))
+              });
+            }
+          }
+        ]
+      );
+    } else {
+      // Multiple sellers
+      Alert.alert(
+        'Multiple Sellers', 
+        `You have selected items from ${sellers.length} different sellers. You'll need to chat with each seller separately.`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          },
+          {
+            text: 'Go to Messages',
+            onPress: () => {
+              navigation.navigate('Messaging', { 
+                user_id,
+                sellersToContact: sellers
+              });
+            }
+          }
+        ]
+      );
+    }
   };
 
   const total = items
     .filter(item => item.checked && item.quantity > 0)
     .reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  const renderItem = ({ item }) => (
+    <View style={styles.itemCard}>
+      <TouchableOpacity 
+        style={styles.checkbox}
+        onPress={() => toggleCheck(item.id)}
+      >
+        <View style={[
+          styles.checkboxInner,
+          item.checked && styles.checkboxChecked
+        ]} />
+      </TouchableOpacity>
+      
+      <Image source={item.image} style={styles.itemImage} />
+      
+      <View style={styles.itemDetails}>
+        <Text style={styles.itemName}>{item.name}</Text>
+        <Text style={styles.itemPrice}>₱{item.price.toFixed(2)}</Text>
+        <Text style={styles.sellerName}>Sold by: {item.seller_name}</Text>
+      </View>
+      
+      <View style={styles.quantityContainer}>
+        <TouchableOpacity 
+          style={styles.quantityButton}
+          onPress={() => updateQuantity(item.id, -1)}
+        >
+          <Text style={styles.quantityButtonText}>-</Text>
+        </TouchableOpacity>
+        <Text style={styles.quantity}>{item.quantity}</Text>
+        <TouchableOpacity 
+          style={styles.quantityButton}
+          onPress={() => updateQuantity(item.id, 1)}
+        >
+          <Text style={styles.quantityButtonText}>+</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Text>Loading cart...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -67,44 +225,17 @@ const AddToCart = ({ route, navigation }) => {
       <Image source={require('../assets/shoppingcart.png')} />
 
       {/* Cart Items */}
-      <View style={styles.itemsList}>
-        {items.map(item => (
-          <View key={item.id} style={styles.itemCard}>
-            <TouchableOpacity 
-              style={styles.checkbox}
-              onPress={() => toggleCheck(item.id)}
-            >
-              <View style={[
-                styles.checkboxInner,
-                item.checked && styles.checkboxChecked
-              ]} />
-            </TouchableOpacity>
-            
-            <Image source={item.image} style={styles.itemImage} />
-            
-            <View style={styles.itemDetails}>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemPrice}>₱{item.price.toFixed(2)}</Text>
-            </View>
-            
-            <View style={styles.quantityContainer}>
-              <TouchableOpacity 
-                style={styles.quantityButton}
-                onPress={() => updateQuantity(item.id, -1)}
-              >
-                <Text style={styles.quantityButtonText}>-</Text>
-              </TouchableOpacity>
-              <Text style={styles.quantity}>{item.quantity}</Text>
-              <TouchableOpacity 
-                style={styles.quantityButton}
-                onPress={() => updateQuantity(item.id, 1)}
-              >
-                <Text style={styles.quantityButtonText}>+</Text>
-              </TouchableOpacity>
-            </View>
+      <FlatList
+        data={items}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+        style={styles.itemsList}
+        ListEmptyComponent={
+          <View style={styles.emptyCart}>
+            <Text style={styles.emptyCartText}>Your cart is empty</Text>
           </View>
-        ))}
-      </View>
+        }
+      />
 
       {/* Footer */}
       <View style={styles.footer}>
@@ -125,8 +256,11 @@ const AddToCart = ({ route, navigation }) => {
               <Text style={styles.totalLabel}>Total</Text>
               <Text style={styles.totalAmount}>₱{total.toFixed(2)}</Text>
             </View>
-            <TouchableOpacity style={styles.placeOrderButton}>
-              <Text style={styles.placeOrderText}>Place Order</Text>
+            <TouchableOpacity 
+              style={styles.placeOrderButton}
+              onPress={placeOrder}
+            >
+              <Text style={styles.placeOrderText}>Contact Seller</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -255,6 +389,11 @@ logo: {
     color: '#f9c2d0',
     fontWeight: 'bold',
   },
+  sellerName: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -276,6 +415,20 @@ logo: {
     paddingHorizontal: 15,
     fontSize: 16,
     fontWeight: '600',
+  },
+  emptyCart: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
+  },
+  emptyCartText: {
+    fontSize: 18,
+    color: '#666',
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   footer: {
     backgroundColor: '#fff',

@@ -10,16 +10,18 @@ const isValidEmail = (email) => {
 };
 
 const Register = ({ navigation }) => {
-  const [last_name, setLastName] = useState('');
-  const [first_name, setFirstName] = useState('');
   const [username, setUsername] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
 
   const handleRegister = async () => {
-    // Ensure the fields are filled
-    if (!first_name || !last_name || !username || !email || !password) {
-      Alert.alert('Error', 'All fields are required!');
+    // Ensure the required fields are filled
+    if (!username || !email || !password) {
+      Alert.alert('Error', 'Username, email, and password are required!');
       return;
     }
   
@@ -30,13 +32,15 @@ const Register = ({ navigation }) => {
     }
   
     try {
-      console.log('Sending registration data:', { first_name, last_name, username, email, password });
+      console.log('Sending registration data:', { username, first_name: firstName, last_name: lastName, email, password, phone, address });
       const response = await axios.post(`${URL}/register`, {
-        first_name,
-        last_name,
         username,
+        first_name: firstName,
+        last_name: lastName,
         email,
         password,
+        phone,
+        address,
       });
   
       console.log('Response from server:', response); // Log the full response from the server
@@ -62,32 +66,34 @@ const Register = ({ navigation }) => {
       <View style={styles.registerContainer}>
         <Text style={styles.title}>Get started</Text>
 
-        {/* Name Fields */}
-        <Text style={styles.label}>Name</Text>
-        <View style={styles.nameInputContainer}>
-          <TextInput
-            style={[styles.input, styles.nameInput]}
-            placeholder="Last name"
-            placeholderTextColor="#A9A9A9"
-            value={last_name}
-            onChangeText={setLastName}
-          />
-          <TextInput
-            style={[styles.input, styles.nameInput]}
-            placeholder="First name"
-            placeholderTextColor="#A9A9A9"
-            value={first_name}
-            onChangeText={setFirstName}
-          />
-        </View>
-
         {/* Username */}
         <Text style={styles.label}>Username</Text>
         <TextInput
           style={styles.input}
           placeholder="Enter your username"
+          placeholderTextColor="#A9A9A9"
           value={username}
           onChangeText={setUsername}
+        />
+
+        {/* First Name */}
+        <Text style={styles.label}>First Name</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your first name"
+          placeholderTextColor="#A9A9A9"
+          value={firstName}
+          onChangeText={setFirstName}
+        />
+
+        {/* Last Name */}
+        <Text style={styles.label}>Last Name</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your last name"
+          placeholderTextColor="#A9A9A9"
+          value={lastName}
+          onChangeText={setLastName}
         />
 
         {/* Email */}
@@ -95,8 +101,10 @@ const Register = ({ navigation }) => {
         <TextInput
           style={styles.input}
           placeholder="Enter your email"
+          placeholderTextColor="#A9A9A9"
           value={email}
           onChangeText={setEmail}
+          keyboardType="email-address"
         />
 
         {/* Password */}
@@ -104,9 +112,33 @@ const Register = ({ navigation }) => {
         <TextInput
           style={styles.input}
           placeholder="Enter your password"
+          placeholderTextColor="#A9A9A9"
           secureTextEntry={true}
           value={password}
           onChangeText={setPassword}
+        />
+
+        {/* Phone (Optional) */}
+        <Text style={styles.label}>Phone (Optional)</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your phone number"
+          placeholderTextColor="#A9A9A9"
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+        />
+
+        {/* Address (Optional) */}
+        <Text style={styles.label}>Address (Optional)</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your address"
+          placeholderTextColor="#A9A9A9"
+          value={address}
+          onChangeText={setAddress}
+          multiline={true}
+          numberOfLines={2}
         />
 
         {/* Sign In Link */}
