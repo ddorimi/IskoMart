@@ -24,7 +24,7 @@ export default function App() {
         <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
         <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} /> 
         <Stack.Screen name="AddToCart" component={AddToCart} options={{ headerShown: false }} /> 
-        <Stack.Screen name ="AddPost" component={AddPost}options={{headerShown: false}}/>
+        <Stack.Screen name="AddPost" component={AddPost} options={{headerShown: false}}/>
         <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }}/> 
         <Stack.Screen name="Messaging" component={Messaging} options={{ headerShown: false }}/> 
         <Stack.Screen name="ChatPage" component={ChatPage} options={{ headerShown: false }}/>

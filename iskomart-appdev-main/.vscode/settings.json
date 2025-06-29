@@ -1,0 +1,17 @@
+{
+  "sqltools.connections": [
+    {
+      "driver": "MySQL",
+      "name": "IskoMart Database",
+      "server": "localhost",
+      "port": 3306,
+      "database": "iskomart",
+      "username": "root",
+      "password": "",
+      "askForPassword": false,
+      "connectionTimeout": 30,
+      "previewLimit": 50,
+      "group": "Development"
+    }
+  ]
+}

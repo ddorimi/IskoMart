@@ -52,18 +52,30 @@ const AddPost = ({ navigation, route }) => {
     }
   
     try {
+      // Convert image to base64 or upload to a service
+      let imageData = null;
+      if (imageUris.length > 0) {
+        // For now, we'll use the image URI directly
+        // In production, you'd want to upload to a cloud service like AWS S3 or Cloudinary
+        imageData = imageUris[0];
+      }
+
       const response = await axios.post(`${URL}/api/items`, {
-        item_photo: imageUris[0] || null,
+        item_photo: imageData,
         item_name: description,
-        item_price: price,
         item_description: description,
+        item_price: parseFloat(price),
         item_category: category,
         user_id: user_id,
       });
   
       if (response.status === 201) {
-        Alert.alert('Success', 'Item published successfully!');
-        navigation.navigate('Home', { user_id });
+        Alert.alert('Success', 'Item published successfully!', [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Home', { user_id })
+          }
+        ]);
       } else {
         Alert.alert('Error', response.data.message || 'Something went wrong while publishing the item');
       }

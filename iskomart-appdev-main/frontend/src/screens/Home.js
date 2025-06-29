@@ -16,9 +16,9 @@ const Home = ({ route, navigation }) => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get(`${URL}/api/get_items`); // Fetch all items
-        setPosts(response.data); // Assume response contains all items
-        setFilteredPosts(response.data); // Initialize filteredPosts with all posts
+        const response = await axios.get(`${URL}/api/get_items?user_id=${user_id}`); // Pass user_id to check likes
+        setPosts(response.data);
+        setFilteredPosts(response.data);
       } catch (err) {
         console.error('Error fetching posts:', err);
         if (err.response) {
@@ -34,7 +34,7 @@ const Home = ({ route, navigation }) => {
       }
     };
     fetchPosts();
-  }, []); // The effect will run once when the component is mounted
+  }, [user_id]);
 
   // Handle category selection and filter posts
   const handleCategorySelect = (category) => {
@@ -119,69 +119,75 @@ const Home = ({ route, navigation }) => {
   };
 
   // Render a single post item
-  const renderItem = ({ item }) => (
-    <View style={styles.postContainer}>
-      <View style={styles.postHeader}>
-        <Image source={imageMap[item.item_id]} style={styles.postImage} />
-        <View style={styles.postInfo}>
-          <Text style={styles.userName}>{`User ${item.item_user_id}`}</Text>
-          <Text style={styles.date}>{item.date}</Text>
+  const renderItem = ({ item }) => {
+    // Use database image if available, otherwise fallback to local images
+    const imageSource = item.item_photo 
+      ? { uri: item.item_photo }
+      : imageMap[item.item_id] || require('../assets/items/1.jpg');
+
+    return (
+      <View style={styles.postContainer}>
+        <View style={styles.postHeader}>
+          <Image source={imageSource} style={styles.postImage} />
+          <View style={styles.postInfo}>
+            <Text style={styles.userName}>{item.username || `User ${item.item_user_id}`}</Text>
+            <Text style={styles.date}>{new Date(item.date).toLocaleDateString()}</Text>
+          </View>
+        </View>
+        <View style={styles.postDetails}>
+          <Text style={styles.price}>₱{item.item_price}</Text>
+          <Text style={styles.title}>{item.item_name}</Text>
+          {item.item_description && (
+            <Text style={styles.description}>{item.item_description}</Text>
+          )}
+          <View style={styles.iconsContainer}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => handleLike(item.item_id, item.liked)}
+            >
+              <Icon
+                name={item.liked ? 'heart' : 'heart-outline'}
+                size={25}
+                color={item.liked ? '#F9C2D0' : '#000'}
+              />
+              <Text style={styles.iconText}>{item.likes}</Text>
+            </TouchableOpacity>
+
+            {/* Message Button */}
+            <TouchableOpacity
+              onPress={() => {
+                if (!user_id || !item.item_user_id) {
+                  Alert.alert('Error', 'Invalid user ID');
+                  return;
+                }
+
+                if (user_id === item.item_user_id) {
+                  Alert.alert('Error', 'You cannot chat with yourself!');
+                  return;
+                }
+
+                navigation.navigate('ChatPage', {
+                  user_id: user_id,
+                  receiver_id: item.item_user_id,
+                  userName: item.username,
+                  avatar: item.profile_image,
+                });
+              }}
+            >
+              <Icon name="chatbubble-outline" size={24} color="#000" marginBottom="3" marginLeft="10"/>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => handleAddToCart(item.item_id)}
+            >
+              <Icon name="cart-outline" size={24} color="#000" />
+              <Text style={styles.iconText}>Add to Cart</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-      <View style={styles.postDetails}>
-        <Text style={styles.price}>₱{item.item_price}</Text>
-        <Text style={styles.title}>{item.item_name}</Text>
-        <View style={styles.iconsContainer}>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => handleLike(item.item_id, item.liked)}
-          >
-            <Icon
-              name={item.liked ? 'heart' : 'heart-outline'}
-              size={25}
-              color={item.liked ? '#F9C2D0' : '#000'}
-            />
-            <Text style={styles.iconText}>{item.likes}</Text>
-          </TouchableOpacity>
-
-          {/* Message Button */}
-          <TouchableOpacity
-            onPress={() => {
-              if (!user_id || !item.item_user_id) {
-                Alert.alert('Error', 'Invalid user ID');
-                return;
-              }
-
-              // Debugging log to verify the ids being passed
-              console.log('Current user ID:', user_id);
-              console.log('Receiver ID:', item.item_user_id);
-
-              if (user_id === item.item_user_id) {
-                Alert.alert('Error', 'You cannot chat with yourself!');
-                return;
-              }
-
-              navigation.navigate('ChatPage', {
-                user_id: user_id, // Current user
-                receiver_id: item.item_user_id, // User who posted the item
-                userName: `${item.username}`, // Username for the chat header
-                avatar: item.avatar, // Avatar for the chat page
-              });
-            }}
-          >
-            <Icon name="chatbubble-outline" size={24} color="#000" marginBottom="3" marginLeft="10"/>
-          </TouchableOpacity>
-          <TouchableOpacity
-      style={styles.iconButton}
-      onPress={() => handleAddToCart(item.item_id)}
-      >
-        <Icon name="cart-outline" size={24} color="#000" />
-        <Text style={styles.iconText}>Add to Cart</Text>
-        </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -350,6 +356,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 14,
     color: '#555',
+  },
+  description: {
+    fontSize: 12,
+    color: '#777',
+    marginTop: 2,
   },
   iconsContainer: {
     flexDirection: 'row',
